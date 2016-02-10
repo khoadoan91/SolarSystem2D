@@ -1,6 +1,6 @@
 var SUN_MASS = 200;
 var EARTH_MASS = 10;
-var GRAVITATION = 100;
+var GRAVITATION = 10000;   //6.67 * Math.pow(10. -11);
 var AM = new AssetManager();
 
 window.onload = function () {
@@ -9,10 +9,11 @@ window.onload = function () {
 
     var game = new GameEngine();
     game.init(ctx);
-    var Sun = new Star(new Vector(0, 0), new Vector(0, 0));
+    var Sun1 = new Star(new Vector(0, 0), new Vector(0, 0));
+    // var Sun2 = new Star (new Vector(50, 0), new Vector(0, 0));
     var Earth = new Planet(new Vector(150, 0), new Vector(0, -120), EARTH_MASS);
-    Earth.addStar(Sun);
-    game.addEntity(Sun);
+    Earth.addStar(Sun1);
+    game.addEntity(Sun1);
     game.addEntity(Earth);
     game.start();
 };
@@ -30,8 +31,8 @@ Vector.prototype = {
         return new Vector (this.x * factor, this.y * factor);
     },
 
-    length : function() {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
+    lengthSquare : function() {
+        return (this.x * this.x + this.y * this.y);
     },
 
     dotProduct : function(other) {
@@ -51,7 +52,6 @@ function Entity(pos, velocity, mass) {
     this.mass = mass || 0;
     this.planet = null;
     this.removeFromWorld = false;
-    this.trail = [];
 }
 
 function Star (pos, velocity) {
@@ -59,14 +59,8 @@ function Star (pos, velocity) {
 }
 
 Star.prototype = {
-    addPlanet : function (planet) {
-        this.planet = planet;
-    },
-
     update : function (tick) {
-        // this.trail.push(this.pos);
-        // var radiusVector = this.planet.pos.plus(this.pos.times(-1));
-        // var velC = Math.sqrt(G)
+
     },
 
     draw : function (ctx) {
@@ -90,15 +84,13 @@ Planet.prototype = {
 
     update : function (tick) {
         this.trail.push(this.pos);
-        var radiusVector = this.star.pos.plus(this.pos.times(-1));
-        var centripetalVelInit = this.vel.projectionOnto(radiusVector);
-        var tangentVelInit = this.vel.plus(centripetalVelInit.times(-1));
-        var velC = Math.sqrt(GRAVITATION * this.star.mass / radiusVector.length());
-        var scale = velC / radiusVector.length();
-        var centripetalVel = centripetalVelInit.plus(radiusVector.times(scale));
-        var realVel = tangentVelInit.plus(centripetalVel);
-        this.pos = this.pos.plus(realVel.times(tick));
-        this.vel = realVel;
+        var delta = this.star.pos.plus(this.pos.times(-1));
+        var distance = Math.sqrt(delta.lengthSquare());
+        var f = (GRAVITATION * this.star.mass * this.mass) / (delta.lengthSquare());
+        var force = delta.times(f / distance);
+        var acceleration = force.times(1/this.mass);
+        this.vel = this.vel.plus(acceleration.times(tick));
+        this.pos = this.pos.plus(this.vel.times(tick));
     },
 
     draw : function (ctx) {
