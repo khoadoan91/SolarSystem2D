@@ -43,7 +43,7 @@ GameEngine.prototype.init = function (ctx) {
     this.ctx = ctx;
     this.surfaceWidth = this.ctx.canvas.width;
     this.surfaceHeight = this.ctx.canvas.height;
-    this.startInput();
+    // this.startInput();
     this.timer = new Timer();
     console.log('game initialized');
 }
@@ -57,18 +57,18 @@ GameEngine.prototype.start = function () {
     })();
 }
 
-GameEngine.prototype.startInput = function () {
-    console.log('Starting input');
-    var that = this;
-
-    this.ctx.canvas.addEventListener("keydown", function (e) {
-        if (String.fromCharCode(e.which) === ' ') that.space = true;
-//        console.log(e);
-        e.preventDefault();
-    }, false);
-
-    console.log('Input started');
-}
+// GameEngine.prototype.startInput = function () {
+//     console.log('Starting input');
+//     var that = this;
+//
+//     this.ctx.canvas.addEventListener("keydown", function (e) {
+//         if (String.fromCharCode(e.which) === ' ') that.space = true;
+// //        console.log(e);
+//         e.preventDefault();
+//     }, false);
+//
+//     console.log('Input started');
+// }
 
 GameEngine.prototype.addEntity = function (entity) {
     console.log('added entity');
@@ -78,6 +78,7 @@ GameEngine.prototype.addEntity = function (entity) {
 GameEngine.prototype.draw = function () {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     this.ctx.save();
+    this.ctx.translate(this.surfaceWidth / 2, this.surfaceHeight / 2);
     for (var i = 0; i < this.entities.length; i++) {
         this.entities[i].draw(this.ctx);
     }
@@ -91,7 +92,7 @@ GameEngine.prototype.update = function () {
         var entity = this.entities[i];
 
         if (!entity.removeFromWorld) {
-            entity.update();
+            entity.update(this.clockTick);
         }
     }
 
@@ -109,39 +110,39 @@ GameEngine.prototype.loop = function () {
     this.space = null;
 }
 
-function Entity(game, x, y) {
-    this.game = game;
-    this.x = x;
-    this.y = y;
-    this.removeFromWorld = false;
-}
-
-Entity.prototype.update = function () {
-}
-
-Entity.prototype.draw = function (ctx) {
-    if (this.game.showOutlines && this.radius) {
-        this.game.ctx.beginPath();
-        this.game.ctx.strokeStyle = "green";
-        this.game.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        this.game.ctx.stroke();
-        this.game.ctx.closePath();
-    }
-}
-
-Entity.prototype.rotateAndCache = function (image, angle) {
-    var offscreenCanvas = document.createElement('canvas');
-    var size = Math.max(image.width, image.height);
-    offscreenCanvas.width = size;
-    offscreenCanvas.height = size;
-    var offscreenCtx = offscreenCanvas.getContext('2d');
-    offscreenCtx.save();
-    offscreenCtx.translate(size / 2, size / 2);
-    offscreenCtx.rotate(angle);
-    offscreenCtx.translate(0, 0);
-    offscreenCtx.drawImage(image, -(image.width / 2), -(image.height / 2));
-    offscreenCtx.restore();
-    //offscreenCtx.strokeStyle = "red";
-    //offscreenCtx.strokeRect(0,0,size,size);
-    return offscreenCanvas;
-}
+// function Entity(game, x, y) {
+//     this.game = game;
+//     this.x = x;
+//     this.y = y;
+//     this.removeFromWorld = false;
+// }
+//
+// Entity.prototype.update = function () {
+// }
+//
+// Entity.prototype.draw = function (ctx) {
+//     if (this.game.showOutlines && this.radius) {
+//         this.game.ctx.beginPath();
+//         this.game.ctx.strokeStyle = "green";
+//         this.game.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+//         this.game.ctx.stroke();
+//         this.game.ctx.closePath();
+//     }
+// }
+//
+// Entity.prototype.rotateAndCache = function (image, angle) {
+//     var offscreenCanvas = document.createElement('canvas');
+//     var size = Math.max(image.width, image.height);
+//     offscreenCanvas.width = size;
+//     offscreenCanvas.height = size;
+//     var offscreenCtx = offscreenCanvas.getContext('2d');
+//     offscreenCtx.save();
+//     offscreenCtx.translate(size / 2, size / 2);
+//     offscreenCtx.rotate(angle);
+//     offscreenCtx.translate(0, 0);
+//     offscreenCtx.drawImage(image, -(image.width / 2), -(image.height / 2));
+//     offscreenCtx.restore();
+//     //offscreenCtx.strokeStyle = "red";
+//     //offscreenCtx.strokeRect(0,0,size,size);
+//     return offscreenCanvas;
+// }
