@@ -132,6 +132,12 @@ GameEngine.prototype.startInput = function () {
 GameEngine.prototype.addEntity = function (entity) {
     this.entities.push(entity);
     // show the info of the entities.
+    var label = document.createElement('Label');
+    if (entity instanceof Star) {
+        label.innerHTML = "Sun &nbsp;&nbsp;&nbsp;&nbsp;";
+    } else if (entity instanceof Planet) {
+        label.innerHTML = "Planet ";
+    }
     var mass = document.createElement('input');
     mass.setAttribute('type', 'text');
     mass.setAttribute('value', entity.mass);
@@ -147,16 +153,28 @@ GameEngine.prototype.addEntity = function (entity) {
     var velY = document.createElement('input');
     velY.setAttribute('type', 'text');
     velY.setAttribute('value', entity.vel.y);
-    var entity = document.createElement('div');
-    entity.setAttribute('id', this.entities.length - 1);
-    entity.appendChild(mass);
-    entity.appendChild(positionX);
-    entity.appendChild(positionY);
-    entity.appendChild(velX);
-    entity.appendChild(velY);
+    var entityInfo = document.createElement('div');
+    entityInfo.setAttribute('id', this.entities.length - 1);
+    entityInfo.appendChild(label);
+    entityInfo.appendChild(mass);
+    entityInfo.appendChild(positionX);
+    entityInfo.appendChild(positionY);
+    entityInfo.appendChild(velX);
+    entityInfo.appendChild(velY);
+    var button = document.createElement('input');
+    button.setAttribute('type', 'button');
+    button.setAttribute('value', 'Apply');
+    button.onclick = function () {
+        entity.setMass(Number(entityInfo.children[1].value));
+        entity.setInitialPosition(new Vector(Number(entityInfo.children[2].value), Number(entityInfo.children[3].value)));
+        entity.setInitialVelocity(new Vector(Number(entityInfo.children[4].value), Number(entityInfo.children[5].value)));
+    }
+    entityInfo.appendChild(button);
+
     var info = document.getElementById('info');
-    info.appendChild(entity);
+    info.appendChild(entityInfo);
     info.appendChild(document.createElement('br'));
+    // console.log(entity.children[1].value);
 }
 
 GameEngine.prototype.draw = function () {
@@ -211,7 +229,7 @@ GameEngine.prototype.update = function () {
         var entity = this.entities[i];
 
         if (!entity.removeFromWorld) {
-            entity.update(period);
+            entity.update(period, document.getElementById(i));
         }
     }
 

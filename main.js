@@ -2,7 +2,7 @@ var SUN_MASS = 2 * Math.pow(10, 30);
 var EARTH_MASS = 6 * Math.pow(10, 24);
 var MOON_MASS = 7.3 * Math.pow(10, 22);
 var GRAVITATION = 6.67 * Math.pow(10, -11);    // m^3/(kg * s^2);
-var EXAMPLE_MASS = 3 * Math.pow(10, 28);
+var TIME_UPDATE = 1000000;
 
 window.onload = function () {
 
@@ -81,11 +81,24 @@ function Entity(pos, velocity, mass) {
     this.trail = [];
     this.others = [];
     this.removeFromWorld = false;
+    this.timeToUpdate = TIME_UPDATE;
 }
 
 Entity.prototype = {
     addOther : function (other) {
         this.others.push(other);
+    },
+
+    setInitialPosition : function (pos) {
+        this.pos = pos;
+    },
+
+    setInitialVelocity : function (vel) {
+        this.vel = vel;
+    },
+
+    setMass : function (mass) {
+        this.mass = mass;
     },
 
     drawForceVector : function(ctx, startingPoint, force) {
@@ -102,8 +115,14 @@ Entity.prototype = {
         ctx.stroke();
     },
 
-    update : function (tick) {
+    update : function (tick, info) {
+        this.timeToUpdate -= tick;
         this.trail.push(this.pos);
+        // if (this.timeToUpdate === TIME_UPDATE) {
+        //     this.pos = new Vector(info.children[2].value, info.children[3].value);
+        //     this.mass = info.children[1].value;
+        //     this.vel = new Vector(info.children[4].value, info.children[5].value);
+        // }
         this.totalForce = new Vector(0, 0);
         for (var i = 0; i < this.others.length; i += 1) {
             var delta = this.others[i].pos.plus(this.pos.times(-1));
@@ -115,6 +134,13 @@ Entity.prototype = {
         var acceleration = this.totalForce.times(1/this.mass);
         this.vel = this.vel.plus(acceleration.times(tick));
         this.pos = this.pos.plus(this.vel.times(tick));
+        if (this.timeToUpdate <= 0) {
+            info.children[2].value = this.pos.x;
+            info.children[3].value = this.pos.y;
+            info.children[4].value = this.vel.x;
+            info.children[5].value = this.vel.y;
+            this.timeToUpdate = TIME_UPDATE;
+        }
     },
 
     draw : function (ctx) {
