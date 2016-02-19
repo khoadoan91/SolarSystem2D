@@ -37,12 +37,24 @@ function GameEngine() {
     this.wheel = null;
     this.surfaceWidth = null;
     this.surfaceHeight = null;
+
+    this.speed = 100000;
+    this.isStart = false;
 }
 
-GameEngine.prototype.init = function (ctx) {
+GameEngine.prototype.init = function (ctx, start, stop) {
     this.ctx = ctx;
     this.surfaceWidth = this.ctx.canvas.width;
     this.surfaceHeight = this.ctx.canvas.height;
+    var that = this;
+    document.getElementById('start').onclick = function () {
+        that.isStart = true;
+        console.log("start");
+    }
+    document.getElementById('stop').onclick = function () {
+        that.isStart = false;
+        console.log("pause");
+    }
     // this.startInput();
     this.timer = new Timer();
     console.log('game initialized');
@@ -50,12 +62,25 @@ GameEngine.prototype.init = function (ctx) {
 
 GameEngine.prototype.start = function () {
     console.log("starting game");
+    this.draw(this.ctx);
     var that = this;
     (function gameLoop() {
-        that.loop();
+        if (that.isStart) {
+            that.loop();
+        }
         requestAnimFrame(gameLoop, that.ctx.canvas);
     })();
 }
+
+// GameEngine.prototype.setStart = function () {
+//     console.log("start");
+//     this.isStart = true;
+// }
+//
+// GameEngine.prototype.setPause = function () {
+//     console.log("pause");
+//     this.isStart = false;
+// }
 
 // GameEngine.prototype.startInput = function () {
 //     console.log('Starting input');
@@ -87,12 +112,13 @@ GameEngine.prototype.draw = function () {
 
 GameEngine.prototype.update = function () {
     var entitiesCount = this.entities.length;
+    var period = document.getElementById('range').value * this.clockTick * this.speed;
 
     for (var i = 0; i < entitiesCount; i++) {
         var entity = this.entities[i];
 
         if (!entity.removeFromWorld) {
-            entity.update(this.clockTick);
+            entity.update(period);
         }
     }
 

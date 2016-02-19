@@ -4,13 +4,15 @@
 <head>
     <meta charset="utf-8">
     <title>Solar System Simulation</title>
-    <script type="text/javascript" src="./assetmanager.js"></script>
     <script type="text/javascript" src="./gameengine.js"></script>
     <script type="text/javascript" src="./main.js"></script>
 </head>
 <body>
-    <!-- <div>Right click and "Inspect Element".  Select the Console Tab to see the debugger output.</div> -->
-
-    <canvas id="gameWorld" width="1200" height="800" style="border: 1px solid white; background: black"></canvas>
+    <div>
+        <input type="button" id="start" value="Start" />
+        <input type="button" id="stop" value="Pause" />
+        <input type="range" id="range" min="10" max="30" value="15" />
+    </div>
+    <canvas id="gameWorld" tabindex="0" width="1200" height="800" style="border: 1px solid white"></canvas>
 </body>
 </html>
