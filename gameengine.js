@@ -34,15 +34,18 @@ function GameEngine() {
     this.ctx = null;
     this.click = null;
     this.mouse = null;
-    this.wheel = null;
     this.surfaceWidth = null;
     this.surfaceHeight = null;
 
     this.speed = 100000;
     this.isStart = false;
+    this.bg = null;
+    this.grid = null;
+    this.isStar = null;
+    this.isPlanet = null;
 }
 
-GameEngine.prototype.init = function (ctx, start, stop) {
+GameEngine.prototype.init = function (ctx) {
     this.ctx = ctx;
     this.surfaceWidth = this.ctx.canvas.width;
     this.surfaceHeight = this.ctx.canvas.height;
@@ -55,7 +58,20 @@ GameEngine.prototype.init = function (ctx, start, stop) {
         that.isStart = false;
         console.log("pause");
     }
-    // this.startInput();
+    document.getElementById('clear').onclick = function () {
+        that.isStart = false;
+        that.entities = [];
+        var info = document.getElementById("info");
+        while (info.firstChild) {
+            info.removeChild(info.firstChild);
+        }
+    }
+    this.grid = document.getElementById('grid');
+    this.bg = document.getElementById('bg');
+    this.isStar = document.getElementById('star');
+    this.isPlanet = document.getElementById('planet');
+    // console.log(this.isStar.checked);
+    this.startInput();
     this.timer = new Timer();
     console.log('game initialized');
 }
@@ -65,6 +81,9 @@ GameEngine.prototype.start = function () {
     this.draw(this.ctx);
     var that = this;
     (function gameLoop() {
+        if (that.grid.checked !== this.showOutlines) {
+            that.draw();
+        }
         if (that.isStart) {
             that.loop();
         }
@@ -72,40 +91,114 @@ GameEngine.prototype.start = function () {
     })();
 }
 
-// GameEngine.prototype.setStart = function () {
-//     console.log("start");
-//     this.isStart = true;
-// }
-//
-// GameEngine.prototype.setPause = function () {
-//     console.log("pause");
-//     this.isStart = false;
-// }
+GameEngine.prototype.startInput = function () {
+    console.log('Starting input');
+    var that = this;
 
-// GameEngine.prototype.startInput = function () {
-//     console.log('Starting input');
-//     var that = this;
-//
-//     this.ctx.canvas.addEventListener("keydown", function (e) {
-//         if (String.fromCharCode(e.which) === ' ') that.space = true;
-// //        console.log(e);
-//         e.preventDefault();
-//     }, false);
-//
-//     console.log('Input started');
-// }
+    var getXandY = function (e) {
+        var x = e.clientX - that.ctx.canvas.getBoundingClientRect().left;
+        var y = e.clientY - that.ctx.canvas.getBoundingClientRect().top;
+        return { x: x, y: y };
+    }
+
+    this.ctx.canvas.addEventListener("mousemove", function (e) {
+        that.mouse = getXandY(e);
+    }, false);
+
+    this.ctx.canvas.addEventListener("click", function (e) {
+        that.click = getXandY(e);
+        if (that.isStar.checked) {
+            var createdStar = new Star(new Vector(that.click.x * Math.pow(10, 9), that.click.y * Math.pow(10, 9)),
+                                new Vector(0, 0), SUN_MASS, 30);
+            for (var i = 0; i < that.entities.length; i += 1) {
+                that.entities[i].addOther(createdStar);
+                createdStar.addOther(that.entities[i]);
+            }
+            that.addEntity(createdStar);
+            that.isStar.checked = false;
+        } else if (that.isPlanet.checked) {
+            var createdPlanet = new Planet(new Vector(that.click.x * Math.pow(10, 9), that.click.y * Math.pow(10, 9)),
+                                    new Vector(0, 0), EARTH_MASS, 10);
+            for (var i = 0; i < that.entities.length; i += 1) {
+                that.entities[i].addOther(createdPlanet);
+                createdPlanet.addOther(that.entities[i]);
+            }
+            that.addEntity(createdPlanet);
+            that.isPlanet.checked = false;
+        }
+    }, false);
+}
 
 GameEngine.prototype.addEntity = function (entity) {
-    console.log('added entity');
     this.entities.push(entity);
+    // show the info of the entities.
+    var mass = document.createElement('input');
+    mass.setAttribute('type', 'text');
+    mass.setAttribute('value', entity.mass);
+    var positionX = document.createElement('input');
+    positionX.setAttribute('type', 'text');
+    positionX.setAttribute('value', entity.pos.x);
+    var positionY = document.createElement('input');
+    positionY.setAttribute('type', 'text');
+    positionY.setAttribute('value', entity.pos.y);
+    var velX = document.createElement('input');
+    velX.setAttribute('type', 'text');
+    velX.setAttribute('value', entity.vel.x);
+    var velY = document.createElement('input');
+    velY.setAttribute('type', 'text');
+    velY.setAttribute('value', entity.vel.y);
+    var entity = document.createElement('div');
+    entity.setAttribute('id', this.entities.length - 1);
+    entity.appendChild(mass);
+    entity.appendChild(positionX);
+    entity.appendChild(positionY);
+    entity.appendChild(velX);
+    entity.appendChild(velY);
+    var info = document.getElementById('info');
+    info.appendChild(entity);
+    info.appendChild(document.createElement('br'));
 }
 
 GameEngine.prototype.draw = function () {
+    if (this.bg.checked) {
+        this.ctx.canvas.style.backgroundColor = "Black";
+    } else {
+        this.ctx.canvas.style.backgroundColor = "White";
+    }
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     this.ctx.save();
-    this.ctx.translate(this.surfaceWidth / 2, this.surfaceHeight / 2);
     for (var i = 0; i < this.entities.length; i++) {
         this.entities[i].draw(this.ctx);
+    }
+    if (this.isStar.checked && this.mouse) {
+        this.ctx.fillStyle = "#FD7D00";
+        this.ctx.globalAlpha = 0.5;
+        this.ctx.beginPath();
+        this.ctx.arc(this.mouse.x, this.mouse.y, 30, 0, 2 * Math.PI);
+        this.ctx.fill();
+    } else if (this.isPlanet.checked && this.mouse) {
+        this.ctx.fillStyle = "#1E90FF";
+        this.ctx.globalAlpha = 0.5;
+        this.ctx.beginPath();
+        this.ctx.arc(this.mouse.x, this.mouse.y, 10, 0, 2 * Math.PI);
+        this.ctx.fill();
+    }
+
+    if (this.grid.checked) {
+        this.showOutlines = this.grid.checked;
+        this.ctx.strokeStyle = "Green";
+        for (var y = 50; y < this.surfaceHeight; y += 50) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, y);
+            this.ctx.lineTo(this.surfaceWidth, y);
+            this.ctx.stroke();
+        }
+        for (var x = 50; x < this.surfaceWidth; x += 50) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, 0);
+            this.ctx.lineTo(x, this.surfaceHeight);
+            this.ctx.stroke();
+        }
     }
     this.ctx.restore();
 }

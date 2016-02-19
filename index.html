@@ -9,10 +9,28 @@
 </head>
 <body>
     <div>
-        <input type="button" id="start" value="Start" />
-        <input type="button" id="stop" value="Pause" />
-        <input type="range" id="range" min="10" max="30" value="15" />
+        <input type="button" id="start" value="Start">
+        <input type="button" id="stop" value="Pause">
+        <input type="button" id="clear" value="Clear">
+        <br>
+        <span> Changing Speed </span>
+        <input type="range" id="range" min="30" max="100" step="5" value="35" onchange="showValue(this.value)"/>
+        <span id="showRange">35 </span>
+        <script type="text/javascript">
+            function showValue(newValue)
+            {
+            	document.getElementById("showRange").innerHTML=newValue;
+            }
+        </script>
+        <br>
+        <input id="grid" type="checkbox"> Show Grid <br>
+        <input id="bg" type="checkbox"> Display Black Background <br>
+        <input id="star" type="radio" name="entity">Add Star<br>
+        <input id="planet" type="radio" name="entity">Add Planet<br>
+        <br>
     </div>
-    <canvas id="gameWorld" tabindex="0" width="1200" height="800" style="border: 1px solid white"></canvas>
+    <div id="info">
+    </div>
+    <canvas id="gameWorld" tabindex="0" width="1200" height="800" style="border: 1px solid green"></canvas>
 </body>
 </html>
