@@ -5,7 +5,7 @@ var GRAVITATION = 6.67 * Math.pow(10, -11);    // m^3/(kg * s^2);
 var TIME_UPDATE = 1000000;
 
 window.onload = function () {
-
+    var allPresets = [];
     var preset1 = [
         // distance from sun to earth is 152 * 10 ^ 9 meters
         new Planet(new Vector(752 * Math.pow(10, 9), 400 * Math.pow(10, 9)), new Vector(0, -26000), EARTH_MASS, 10),
@@ -19,26 +19,54 @@ window.onload = function () {
     ];
 
     var preset3 = [
-        new Star(new Vector(-250 * Math.pow(10, 9), 0), new Vector(0, -8000), SUN_MASS, 30),
-        new Star(new Vector(250 * Math.pow(10, 9), 0), new Vector(0, 7000), SUN_MASS, 30),
-        new Planet(new Vector(-102 * Math.pow(10, 9), 0), new Vector(0, 12000), EARTH_MASS, 10)
+        new Star(new Vector(250 * Math.pow(10, 9), 400 * Math.pow(10, 9)), new Vector(0, -8000), SUN_MASS, 30),
+        new Star(new Vector(850 * Math.pow(10, 9), 400 * Math.pow(10, 9)), new Vector(0, 7000), SUN_MASS, 30),
+        new Planet(new Vector(102 * Math.pow(10, 9), 400 * Math.pow(10, 9)), new Vector(0, 12000), EARTH_MASS, 10)
     ];
 
+    var preset5 = [
+        new Star(new Vector(800 * Math.pow(10, 9), 400 * Math.pow(10, 9)), new Vector(0, 0), SUN_MASS, 30),
+        new Star(new Vector(400 * Math.pow(10,9), 400 * Math.pow(10, 9)), new Vector(0, 0), SUN_MASS, 30),
+        new Planet(new Vector(580 * Math.pow(10, 9), 270 * Math.pow(10, 9)), new Vector(-35000, 0), MOON_MASS, 4),
+        new Planet(new Vector(800 * Math.pow(10, 9), 200 * Math.pow(10, 9)), new Vector(-30000, 12000), EARTH_MASS, 10)
+    ];
+
+    // var preset4 = [
+    //     new Star(new Vector(429 * Math.pow(10, 9), 133 * Math.pow(10, 9)), new Vector(0, 0), SUN_MASS, 30),
+    //     new Star(new Vector(874 * Math.pow(10, 9), 250 * Math.pow(10, 9)), new Vector(0, 0), SUN_MASS, 30),
+    //     // new Star(new Vector(930 * Math.pow(10, 9), 550 * Math.pow(10, 9)), new Vector(0, 0), SUN_MASS, 30),
+    //     new Star(new Vector(520 * Math.pow(10, 9), 709 * Math.pow(10, 9)), new Vector(0, 0), SUN_MASS, 30),
+    //     // new Star(new Vector(140 * Math.pow(10, 9), 480 * Math.pow(10, 9)), new Vector(0, 0), SUN_MASS, 30),
+    //     new Planet(new Vector(1082 * Math.pow(10, 9), 250 * Math.pow(10, 9)), new Vector(0, -20000), EARTH_MASS, 10)
+    // ]
+    allPresets.push(preset1);
+    allPresets.push(preset2);
+    allPresets.push(preset3);
     var canvas = document.getElementById('gameWorld');
-    // canvas.style.backgroundColor = "Black";
     var ctx = canvas.getContext('2d');
 
     var game = new GameEngine();
     game.init(ctx);
 
-    var preset = preset2;
+    // var preset = allPresets[1];
+    // for (var i = 0; i < preset.length; i += 1) {
+    //     for (var j = 0; j < preset.length; j += 1) {
+    //         if (i !== j) {
+    //             preset[i].addOther(preset[j]);
+    //         }
+    //     }
+    //     game.addEntity(preset[i]);
+    // }
+
+    var preset = preset5;
     for (var i = 0; i < preset.length; i += 1) {
-        for (var j = 0; j < preset.length; j += 1) {
-            if (i !== j) {
-                preset[i].addOther(preset[j]);
-            }
-        }
         game.addEntity(preset[i]);
+    }
+    var earth = game.entities[game.entities.length - 1];
+    var commet = game.entities[game.entities.length - 2];
+    for (var i = 0; i < preset.length - 2; i += 1) {
+        earth.addOther(game.entities[i]);
+        commet.addOther(game.entities[i]);
     }
     console.log(preset);
     game.start();

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -16,6 +15,12 @@
         <span> Changing Speed </span>
         <input type="range" id="range" min="30" max="100" step="5" value="35" onchange="showValue(this.value)"/>
         <span id="showRange">35 </span>
+        <select id='preset'>
+            <option value = 0>Sun and Earth</option>
+            <option value = 1>Sun, Earth and comet</option>
+            <option value = 2>Earth and binary star</option>
+        </select>
+        <input type="button" id="apply-preset" value="Apply">
         <script type="text/javascript">
             function showValue(newValue)
             {
@@ -29,9 +34,16 @@
         <input id="planet" type="radio" name="entity">Add Planet<br>
         <br>
     </div>
-    <pre>        Mass (kg)                  Initial Position                     Initial Velocity (m/2)</pre>
+
+    <canvas id="gameWorld" tabindex="0" width="1200" height="800" style="border: 1px solid green"></canvas>
+    <pre>        Mass (kg)               Initial Position          Initial Velocity (m/2)</pre>
     <div id="info">
     </div>
-    <canvas id="gameWorld" tabindex="0" width="1200" height="800" style="border: 1px solid green"></canvas>
+    <input type="button" id="save-preset" value="Save Preset">
 </body>
 </html>
+
+<!--
+The GUI of the website was built based on this link.
+https://phet.colorado.edu/sims/my-solar-system/my-solar-system_en.html
+-->

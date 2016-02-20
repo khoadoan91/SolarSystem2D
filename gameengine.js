@@ -37,6 +37,7 @@ function GameEngine() {
     this.surfaceWidth = null;
     this.surfaceHeight = null;
 
+    this.allPresets = null;
     this.speed = 100000;
     this.isStart = false;
     this.bg = null;
@@ -45,19 +46,20 @@ function GameEngine() {
     this.isPlanet = null;
 }
 
-GameEngine.prototype.init = function (ctx) {
+GameEngine.prototype.init = function (ctx, preset) {
     this.ctx = ctx;
+    this.allPresets = preset;
     this.surfaceWidth = this.ctx.canvas.width;
     this.surfaceHeight = this.ctx.canvas.height;
     var that = this;
     document.getElementById('start').onclick = function () {
         that.isStart = true;
         console.log("start");
-    }
+    };
     document.getElementById('stop').onclick = function () {
         that.isStart = false;
         console.log("pause");
-    }
+    };
     document.getElementById('clear').onclick = function () {
         that.isStart = false;
         that.entities = [];
@@ -65,7 +67,10 @@ GameEngine.prototype.init = function (ctx) {
         while (info.firstChild) {
             info.removeChild(info.firstChild);
         }
-    }
+    };
+    document.getElementById('apply-preset').onclick = function () {
+
+    };
     this.grid = document.getElementById('grid');
     this.bg = document.getElementById('bg');
     this.isStar = document.getElementById('star');
