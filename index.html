@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Solar System Simulation</title>
+    <script type="text/javascript" src="http://76.28.150.193:8888/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="./gameengine.js"></script>
     <script type="text/javascript" src="./main.js"></script>
 </head>
@@ -18,7 +19,7 @@
         <select id='preset'>
             <option value = 0>Sun and Earth</option>
             <option value = 1>Sun, Earth and comet</option>
-            <option value = 2>Earth and binary star</option>
+            <option value = 2 selected="selected">Earth, commet and binary star</option>
         </select>
         <input type="button" id="apply-preset" value="Apply">
         <script type="text/javascript">
@@ -39,7 +40,7 @@
     <pre>        Mass (kg)               Initial Position          Initial Velocity (m/2)</pre>
     <div id="info">
     </div>
-    <input type="button" id="save-preset" value="Save Preset">
+    <input type="button" id="save-state" value="Save State">
 </body>
 </html>
 

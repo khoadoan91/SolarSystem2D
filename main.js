@@ -1,3 +1,11 @@
+var socket = io.connect("http://76.28.150.193:8888");
+
+// socket.emit("save", { studentname: "Kyle Doan", statename: "SolarSystem2DcurrentStatus", data: "choosing preset and saving presets doesn't work yet" });
+// socket.emit("load", { studentname: "Kyle Doan", statename: "SolarSystem2D" });
+// socket.emit("load", { studentname: "Kyle Doan", statename: "SolarSystem2DcurrentStatus" });
+// socket.emit("save", { studentname: "Kyle Doan", statename: "testOverrideData", data: "override data"});
+// socket.emit("load", { studentname: "Kyle Doan", statename: "testOverrideData" });
+
 var SUN_MASS = 2 * Math.pow(10, 30);
 var EARTH_MASS = 6 * Math.pow(10, 24);
 var MOON_MASS = 7.3 * Math.pow(10, 22);
@@ -5,6 +13,29 @@ var GRAVITATION = 6.67 * Math.pow(10, -11);    // m^3/(kg * s^2);
 var TIME_UPDATE = 1000000;
 
 window.onload = function () {
+    var canvas = document.getElementById('gameWorld');
+    var ctx = canvas.getContext('2d');
+
+    var game = new GameEngine();
+    game.init(ctx);
+
+    socket.on("connect", function () {
+        console.log("Socket connected.")
+    });
+    socket.on("disconnect", function () {
+        console.log("Socket disconnected.")
+    });
+    socket.on("reconnect", function () {
+        console.log("Socket reconnected.")
+    });
+
+    socket.on("load", function (data) {
+        console.log(data);
+        game.loadState(data.data);
+    });
+
+    socket.emit("load", { studentname: "Kyle Doan", statename: "entities" });
+
     var allPresets = [];
     var preset1 = [
         // distance from sun to earth is 152 * 10 ^ 9 meters
@@ -18,11 +49,11 @@ window.onload = function () {
         new Star(new Vector(600 * Math.pow(10, 9), 400 * Math.pow(10, 9)), new Vector(0, 0), SUN_MASS, 30)
     ];
 
-    var preset3 = [
-        new Star(new Vector(250 * Math.pow(10, 9), 400 * Math.pow(10, 9)), new Vector(0, -8000), SUN_MASS, 30),
-        new Star(new Vector(850 * Math.pow(10, 9), 400 * Math.pow(10, 9)), new Vector(0, 7000), SUN_MASS, 30),
-        new Planet(new Vector(102 * Math.pow(10, 9), 400 * Math.pow(10, 9)), new Vector(0, 12000), EARTH_MASS, 10)
-    ];
+    // var preset3 = [
+    //     new Star(new Vector(250 * Math.pow(10, 9), 400 * Math.pow(10, 9)), new Vector(0, -8000), SUN_MASS, 30),
+    //     new Star(new Vector(850 * Math.pow(10, 9), 400 * Math.pow(10, 9)), new Vector(0, 7000), SUN_MASS, 30),
+    //     new Planet(new Vector(102 * Math.pow(10, 9), 400 * Math.pow(10, 9)), new Vector(0, 12000), EARTH_MASS, 10)
+    // ];
 
     var preset5 = [
         new Star(new Vector(800 * Math.pow(10, 9), 400 * Math.pow(10, 9)), new Vector(0, 0), SUN_MASS, 30),
@@ -39,14 +70,9 @@ window.onload = function () {
     //     // new Star(new Vector(140 * Math.pow(10, 9), 480 * Math.pow(10, 9)), new Vector(0, 0), SUN_MASS, 30),
     //     new Planet(new Vector(1082 * Math.pow(10, 9), 250 * Math.pow(10, 9)), new Vector(0, -20000), EARTH_MASS, 10)
     // ]
-    allPresets.push(preset1);
-    allPresets.push(preset2);
-    allPresets.push(preset3);
-    var canvas = document.getElementById('gameWorld');
-    var ctx = canvas.getContext('2d');
-
-    var game = new GameEngine();
-    game.init(ctx);
+    game.addPreset(preset1);
+    game.addPreset(preset2);
+    game.addPreset(preset5);
 
     // var preset = allPresets[1];
     // for (var i = 0; i < preset.length; i += 1) {
@@ -58,17 +84,18 @@ window.onload = function () {
     //     game.addEntity(preset[i]);
     // }
 
-    var preset = preset5;
-    for (var i = 0; i < preset.length; i += 1) {
-        game.addEntity(preset[i]);
-    }
-    var earth = game.entities[game.entities.length - 1];
-    var commet = game.entities[game.entities.length - 2];
-    for (var i = 0; i < preset.length - 2; i += 1) {
-        earth.addOther(game.entities[i]);
-        commet.addOther(game.entities[i]);
-    }
-    console.log(preset);
+    // var preset = preset5;
+    // for (var i = 0; i < preset.length; i += 1) {
+    //     game.addEntity(preset[i]);
+    // }
+    // var earth = game.entities[game.entities.length - 1];
+    // var commet = game.entities[game.entities.length - 2];
+    // for (var i = 0; i < preset.length - 2; i += 1) {
+    //     earth.addOther(game.entities[i]);
+    //     commet.addOther(game.entities[i]);
+    // }
+    // console.log(preset);
+    // game.saveState();
     game.start();
 };
 
@@ -183,13 +210,15 @@ Entity.prototype = {
     }
 };
 
-function Star (pos, velocity, mass, radius) {
+function Star (pos, velocity, mass, radius, trail) {
     Entity.call(this, pos, velocity, mass);
     this.radius = radius;
+    if (trail !== undefined) this.trail = trail;
 }
 
 Star.prototype = new Entity();
 Star.prototype.constructor = Star;
+Star.prototype.type = "Star";
 
 Star.prototype.draw = function (ctx) {
     ctx.save();
@@ -203,13 +232,23 @@ Star.prototype.draw = function (ctx) {
     ctx.restore();
 };
 
-function Planet (pos, velocity, mass, radius) {
+Star.prototype.toString = function () {
+    return {type : "Star", mass : this.mass, pos : this.pos, vel : this.vel, radius : this.radius, trail : this.trail}
+}
+
+function Planet (pos, velocity, mass, radius, trail) {
     Entity.call(this, pos, velocity, mass);
     this.radius = radius;
+    if (trail !== undefined) this.trail = trail;
 }
 
 Planet.prototype = Object.create(Entity.prototype);
 Planet.prototype.constructor = Planet;
+Planet.prototype.type = "Planet";
+
+Planet.prototype.toString = function () {
+    return {type : "Planet", mass : this.mass, pos : this.pos, vel : this.vel, radius : this.radius, trail : this.trail}
+}
 
 Planet.prototype.draw = function (ctx) {
     ctx.save();

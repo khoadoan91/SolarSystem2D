@@ -30,6 +30,7 @@ Timer.prototype.tick = function () {
 
 function GameEngine() {
     this.entities = [];
+    this.presets = [];
     this.showOutlines = false;
     this.ctx = null;
     this.click = null;
@@ -46,12 +47,22 @@ function GameEngine() {
     this.isPlanet = null;
 }
 
+GameEngine.prototype.clearElements = function () {
+    this.isStart = false;
+    this.entities = [];
+    var parent = document.getElementById("info");
+    while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+    }
+};
+
 GameEngine.prototype.init = function (ctx, preset) {
     this.ctx = ctx;
     this.allPresets = preset;
     this.surfaceWidth = this.ctx.canvas.width;
     this.surfaceHeight = this.ctx.canvas.height;
     var that = this;
+
     document.getElementById('start').onclick = function () {
         that.isStart = true;
         console.log("start");
@@ -61,16 +72,27 @@ GameEngine.prototype.init = function (ctx, preset) {
         console.log("pause");
     };
     document.getElementById('clear').onclick = function () {
-        that.isStart = false;
-        that.entities = [];
-        var info = document.getElementById("info");
-        while (info.firstChild) {
-            info.removeChild(info.firstChild);
-        }
+        that.clearElements();
     };
     document.getElementById('apply-preset').onclick = function () {
-
+        var presetOption = document.getElementById("preset");
+        var presetIndex = presetOption.options[presetOption.selectedIndex].value;
+        that.clearElements();
+        var preset = that.presets[presetIndex];
+        for (var i = 0; i < preset.length; i += 1) {
+            that.addEntity(preset[i]);
+        }
+        for (var i = 0; i < preset.length; i += 1) {
+            for (var j = 0; j < preset.length; j += 1) {
+                if (i !== j && that.entities[i].type !== "Star") {
+                    that.entities[i].addOther(that.entities[j]);
+                }
+            }
+        }
     };
+    document.getElementById('save-state').onclick = function () {
+        that.saveState();
+    }
     this.grid = document.getElementById('grid');
     this.bg = document.getElementById('bg');
     this.isStar = document.getElementById('star');
@@ -81,16 +103,19 @@ GameEngine.prototype.init = function (ctx, preset) {
     console.log('game initialized');
 }
 
+GameEngine.prototype.addPreset = function (preset) {
+    this.presets.push(preset);
+}
+
 GameEngine.prototype.start = function () {
     console.log("starting game");
     this.draw(this.ctx);
     var that = this;
     (function gameLoop() {
-        if (that.grid.checked !== this.showOutlines) {
-            that.draw();
-        }
         if (that.isStart) {
             that.loop();
+        } else if (that.grid.checked !== this.showOutlines) {
+            that.draw();
         }
         requestAnimFrame(gameLoop, that.ctx.canvas);
     })();
@@ -132,6 +157,47 @@ GameEngine.prototype.startInput = function () {
             that.isPlanet.checked = false;
         }
     }, false);
+}
+
+GameEngine.prototype.saveState = function () {
+    var content = [];
+    for (var i = 0; i < this.entities.length; i += 1) {
+        content.push(this.entities[i].toString());
+    }
+    socket.emit("save", { studentname: "Kyle Doan", statename: "entities", data : content });
+    console.log("Saved");
+}
+
+GameEngine.prototype.loadState = function (data) {
+    this.clearElements();
+    var entity;
+    var planets = [];
+    for (var i = 0; i < data.length; i += 1) {
+        switch (data[i].type) {
+            case "Star":
+                entity = new Star(new Vector(data[i].pos.x, data[i].pos.y),
+                                new Vector(data[i].vel.x, data[i].vel.y),
+                                data[i].mass, data[i].radius, data[i].trail);
+                break;
+            case "Planet" :
+                entity = new Planet(new Vector(data[i].pos.x, data[i].pos.y),
+                                new Vector(data[i].vel.x, data[i].vel.y),
+                                data[i].mass, data[i].radius, data[i].trail);
+                planets.push(entity);
+                break;
+            default: break;
+        }
+        if (entity !== undefined) this.addEntity(entity);
+    }
+    for (var i = 0; i < this.entities.length; i += 1) {
+        for (var j = 0; j < planets.length; j += 1) {
+            // var planet = planets[i], ent = this.entities[i];
+            if (this.entities[i] !== planets[j]) {
+                planets[j].addOther(this.entities[i]);
+            }
+        }
+    }
+    console.log(this.entities);
 }
 
 GameEngine.prototype.addEntity = function (entity) {
